@@ -1,0 +1,646 @@
+1)
+INSERT INTO estado
+VALUES('TA', 'Tahia', 564600),
+      ('TA', 'Taraná', 388886);
+
+2)
+(a) 
+INSERT INTO cidade (cidade, nome, numhabitantes)
+VALUES (59, 'Tondrina', 499955);
+
+(b)
+INSERT INTO cidade
+VALUES (DEFAULT, 'Tondrina', 3992002, 'PR');
+
+3)
+INSERT INTO cidade
+VALUES (DEFAULT, 'Pinhão', 3992002, 'SU');
+
+4)
+UPDATE estado
+SET estadoid = 'TX'
+WHERE estadoid = 'TA';
+
+5)
+DELETE FROM estado
+WHERE estadoid = 'TR';
+
+6)
+INSERT INTO departamento
+VALUES
+(DEFAULT, 'Contas & Cia', 'Predio B, Sala 1', '2026-01-10'),
+(DEFAULT, 'Cofre Azul', 'Predio B, Sala 2', '2026-01-15'),
+(DEFAULT, 'Fabrica Nova', 'Predio C, Sala 3', '2026-01-20'),
+(DEFAULT, 'VendaMais', 'Predio D, Sala 4', '2026-01-25'),
+(DEFAULT, 'ReparaTudo', 'Predio E, Sala 5', '2026-02-01'),
+(DEFAULT, 'Pessoas & Talentos', 'Predio F, Sala 6', '2026-02-05'),
+(DEFAULT, 'Academia Pro', 'Predio G, Sala 7', '2026-02-10');
+
+7)
+SELECT * FROM vendedor;UPDATE departamento
+SET departamentoid = 30
+WHERE departamentoid = 2;
+SELECT * FROM vendedor;
+
+    Ao alterar o departamentoid de 2 para 30 na tabela Departamento, os vendedores que estavam associados ao departamento 2,
+Marcos Roberto e Mariana Nascimento, passaram a apresentar NULL no campo departamentoid. Isso ocorre devido à forma como a 
+chave estrangeira entre as tabelas Departamento e Vendedor está configurada. Como o departamento 2 deixou de existir, aquela 
+referência não consegue mais apontar para um departamento válido.
+
+8)
+UPDATE departamento
+SET nome = 'Cofre Amarelo',
+    localizacao = 'Predio C, Sala 1'
+WHERE departamentoid = 10;
+SELECT * FROM departamento;
+
+9)
+UPDATE produtoLote
+SET quantidadeadquirida = 30,
+    quantidadevendida = 15
+WHERE produtoid = 234566
+  AND loteid = 2;
+
+10)
+UPDATE produtoLote
+SET produtoid = 304050
+WHERE produtoid = 234566;
+
+ERROR:  atualização ou exclusão em tabela "produtolote" viola restrição de chave estrangeira "fk_iv_lote" em "itemvenda"
+Chave (produtoid, loteid)=(234566, 1) ainda é referenciada pela tabela "itemvenda". 
+
+ERRO:  atualização ou exclusão em tabela "produtolote" viola restrição de chave estrangeira "fk_iv_lote" em "itemvenda"
+SQL state: 23503
+Detail: Chave (produtoid, loteid)=(234566, 1) ainda é referenciada pela tabela "itemvenda".
+
+11)
+INSERT INTO vendedor
+(vendedorid, nome, datanascimento, cepid, numero,
+ telefonefixo, telefonecelular, datacontratacao,
+ departamentoid, tituloeleitor)
+VALUES
+(9, 'Pamela Teste', '2005-04-17', '85023300', 100,
+ '(42)36291234', '(42)99876543', '2026-09-29',
+ 3, NULL);
+
+DELETE FROM departamento
+WHERE departamentoid = 3;
+
+SELECT * FROM vendedor;
+
+12)
+INSERT INTO cep
+VALUES ('85170000', 'Expedicionário amarilio', 'Azaleia', 40);
+SELECT * FROM cep;
+
+INSERT INTO vendedor
+VALUES
+(10, 'João Wasem', '2008-10-21', '85170000', 200,
+ '(49)91933724', '(49)91933724', '2026-10-01', 5, '24536672');
+SELECT * FROM vendedor;
+
+DELETE FROM cep
+WHERE cepid = '85170000';
+
+Ao tentar excluir o CEP 85170000, o PostgreSQL apresentou um erro de chave estrangeira, pois o CEP ainda está sendo referenciado pelo 
+vendedor João Wasem. Portanto, o banco impede a exclusão do CEP enquanto houver um vendedor associado a ele.
+
+13)
+INSERT INTO produto
+(produtoid, nome, estoqueminimo, unidademedida, precovenda, embalagem, classeid)
+VALUES
+(999999, 'Pão', 100, 'Kg', 12.99, '1kg de massa', 9);
+
+DELETE FROM classe
+WHERE classeid = 9;
+
+SELECT * FROM produto;
+
+14)
+SELECT * FROM clientefisico;
+SELECT *
+FROM clientefisico
+WHERE nome LIKE 'M%a%';
+
+15)
+SELECT * FROM clientejuridico;
+SELECT *
+FROM clientejuridico
+WHERE nomefantasia ~* '^[a-i]';
+
+16)
+SELECT * FROM vendedor
+WHERE nome LIKE '%Bara';
+
+17)
+SELECT *
+FROM clientejuridico
+WHERE nomefantasia ILIKE '%e_%a%';
+
+
+18)
+SELECT *
+FROM cidade
+WHERE nome ILIKE '%a'
+   OR nome ILIKE '%e'
+   OR nome ILIKE '%i'
+   OR nome ILIKE '%o'
+   OR nome ILIKE '%u'
+ORDER BY nome ASC;
+
+19)
+SELECT *
+FROM estado
+WHERE nome NOT ILIKE 'A%'
+  AND nome NOT ILIKE 'E%'
+  AND nome NOT ILIKE 'I%'
+  AND nome NOT ILIKE 'O%'
+  AND nome NOT ILIKE 'U%'
+ORDER BY nome ASC;
+
+20)
+SELECT nome, numhabitantes
+FROM cidade
+WHERE nome LIKE '_a%';
+
+21)
+SELECT *
+FROM produto
+WHERE unidademedida = 'KG';
+
+22)
+SELECT
+    v.nome,
+    c.logradouro,
+    v.numero,
+    c.bairro,
+    CASE
+        WHEN AGE(CURRENT_DATE, v.datanascimento) >= INTERVAL '18 years'
+        THEN 'Maior'
+        ELSE 'Menor'
+    END AS idade
+FROM vendedor v
+JOIN cep c ON v.cepid = c.cepid;
+
+23)
+SELECT
+    v.vendaid,
+    c.logradouro,
+    v.numero,
+    c.bairro,
+    vd.nome,
+    v.dataentrega
+FROM venda v
+JOIN vendedor vd ON v.vendedorid = vd.vendedorid
+JOIN cep c ON vd.cepid = c.cepid
+WHERE c.logradouro = 'Rua Alipio Marcondes';
+
+24)
+SELECT *
+FROM departamento
+WHERE nome LIKE ' %'
+   OR nome LIKE '% ';
+
+25)
+SELECT
+    c.nome AS cidade,
+    e.nome AS estado
+FROM cidade c
+JOIN estado e ON c.estadoid = e.estadoid
+WHERE LOWER(unaccent(c.nome)) = LOWER(unaccent(e.nome));
+
+26)
+SELECT p.produtoid, p.nome
+FROM produto p
+WHERE p.produtoid IN (
+    SELECT iv.produtoid
+    FROM itemvenda iv
+    JOIN venda v ON iv.vendaid = v.vendaid
+    JOIN clientefisico cf ON v.clienteid = cf.clienteid
+
+    INTERSECT
+
+    SELECT iv.produtoid
+    FROM itemvenda iv
+    JOIN venda v ON iv.vendaid = v.vendaid
+    JOIN clientejuridico cj ON v.clienteid = cj.clienteid
+);
+
+27)
+SELECT p.produtoid, p.nome
+FROM produto p
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM itemvenda iv
+    WHERE iv.produtoid = p.produtoid
+);
+
+28)
+SELECT vd.vendedorid, vd.nome
+FROM vendedor vd
+JOIN venda v ON vd.vendedorid = v.vendedorid
+WHERE v.clienteid IN (1, 2)
+GROUP BY vd.vendedorid, vd.nome
+HAVING COUNT(DISTINCT v.clienteid) = 2;
+
+29)
+SELECT cf.nome AS nome, c.cepid AS cep, c.logradouro, cl.numero
+FROM clientefisico cf
+JOIN cliente cl ON cf.clienteid = cl.clienteid
+JOIN cep c ON cl.cepid = c.cepid
+
+UNION ALL
+
+SELECT cj.nomefantasia AS nome, c.cepid AS cep, c.logradouro, cl.numero
+FROM clientejuridico cj
+JOIN cliente cl ON cj.clienteid = cl.clienteid
+JOIN cep c ON cl.cepid = c.cepid
+
+UNION ALL
+
+SELECT v.nome, c.cepid AS cep, c.logradouro, v.numero
+FROM vendedor v
+JOIN cep c ON v.cepid = c.cepid
+
+UNION ALL
+
+SELECT f.nomefantasia AS nome, c.cepid AS cep, c.logradouro, f.numero
+FROM fornecedor f
+JOIN cep c ON f.cepid = c.cepid;
+
+30)
+SELECT c.cidadeid, c.nome
+FROM cidade c
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM cep cp
+    JOIN cliente cl ON cp.cepid = cl.cepid
+    WHERE cp.cidadeid = c.cidadeid
+);
+
+31)
+SELECT v.*
+FROM vendedor v
+JOIN cep cp ON v.cepid = cp.cepid
+JOIN cidade c ON cp.cidadeid = c.cidadeid
+WHERE c.nome IN ('Guarapuava', 'Pitanga');
+
+32)
+SELECT f.*
+FROM fornecedor f
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM pedido p
+    WHERE p.fornecedorid = f.fornecedorid
+      AND p.status ILIKE 'Em Aprova%'
+);
+
+33)
+SELECT DISTINCT vd.vendedorid, vd.nome
+FROM vendedor vd
+JOIN venda v ON vd.vendedorid = v.vendedorid
+JOIN itemvenda iv ON v.vendaid = iv.vendaid
+JOIN produto p ON iv.produtoid = p.produtoid
+WHERE p.nome ILIKE '%Banana%'
+   OR p.nome ILIKE '%Aveia%';
+
+34)
+SELECT f.fornecedorid, f.nomefantasia
+FROM fornecedor f
+JOIN pedido pe ON f.fornecedorid = pe.fornecedorid
+JOIN itempedido ip ON pe.pedidoid = ip.pedidoid
+JOIN produto p ON ip.produtoid = p.produtoid
+WHERE p.nome ILIKE '%Alface%'
+
+INTERSECT
+
+SELECT f.fornecedorid, f.nomefantasia
+FROM fornecedor f
+JOIN pedido pe ON f.fornecedorid = pe.fornecedorid
+JOIN itempedido ip ON pe.pedidoid = ip.pedidoid
+JOIN produto p ON ip.produtoid = p.produtoid
+WHERE p.nome ILIKE '%Acucar%';
+
+35)
+SELECT
+    d.nome AS curso,
+    prereq.nome AS pre_requisito
+FROM disciplina d
+JOIN prerequisito pr
+    ON d.disciplinaid = pr.disciplinaid
+JOIN disciplina prereq
+    ON pr.disciplinaidprereq = prereq.disciplinaid;
+
+36)
+SELECT p.professorid, p.nome
+FROM professor p
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM professorturma pt
+    JOIN disciplina d
+        ON pt.disciplinaid = d.disciplinaid
+    WHERE pt.professorid = p.professorid
+      AND d.nome = 'Programação Lógica'
+);
+
+37)
+SELECT d.disciplinaid, d.nome AS disciplina, dep.nome AS departamento
+FROM disciplina d
+JOIN departamento dep
+    ON d.departamentoid = dep.departamentoid
+WHERE dep.nome IN ('Informatica', 'Matematica');
+
+38)
+SELECT p.professorid, p.nome
+FROM professor p
+JOIN professorturma pt
+    ON p.professorid = pt.professorid
+JOIN disciplina d
+    ON pt.disciplinaid = d.disciplinaid
+WHERE d.nome IN ('Programa?ao FORTRAN', 'Algoritmos e programa?ao')
+GROUP BY p.professorid, p.nome
+HAVING COUNT(DISTINCT d.disciplinaid) = 2;
+
+39)
+SELECT professorid, nome
+FROM professor
+WHERE nome ILIKE '%a'
+   OR nome ILIKE '%e'
+   OR nome ILIKE '%i'
+   OR nome ILIKE '%o'
+   OR nome ILIKE '%u';
+
+40)
+SELECT departamentoid, nome
+FROM departamento
+WHERE nome LIKE '_a%';
+
+41)
+SELECT d.disciplinaid, d.nome
+FROM disciplina d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM professorturma pt
+    WHERE pt.disciplinaid = d.disciplinaid
+      AND pt.anosemestre = 20022
+);
+
+42)
+SELECT disciplinaid, nome
+FROM disciplina
+WHERE nome NOT ILIKE 'a%'
+  AND nome NOT ILIKE 'e%'
+  AND nome NOT ILIKE 'i%'
+  AND nome NOT ILIKE 'o%'
+  AND nome NOT ILIKE 'u%';
+
+43)
+SELECT d.disciplinaid, d.nome
+FROM disciplina d
+JOIN professorturma pt
+    ON d.disciplinaid = pt.disciplinaid
+WHERE pt.anosemestre IN (20021, 20022)
+GROUP BY d.disciplinaid, d.nome
+HAVING COUNT(DISTINCT pt.anosemestre) = 2;
+
+44)
+ALTER TABLE disciplina
+ADD COLUMN status VARCHAR(40);
+
+45)
+INSERT INTO departamento (departamentoid, nome)
+VALUES ('MAC01', 'Matemática Aplicada e Computacional');
+
+46)
+UPDATE sala
+SET descricao = 'Miniauditório'
+WHERE predioid = 43423
+  AND numsala = 105;
+
+47)
+DELETE FROM professorturma
+WHERE professorid = 4
+  AND disciplinaid = 112
+  AND siglaturma = 'U';
+
+48)
+SELECT d.disciplinaid, d.nome
+FROM disciplina d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM professorturma pt
+    WHERE pt.disciplinaid = d.disciplinaid
+      AND pt.anosemestre = 20022
+);
+
+49)
+SELECT disciplinaid, nome
+FROM disciplina
+WHERE nome ILIKE 'a%'
+   OR nome ILIKE 'e%'
+   OR nome ILIKE 'i%'
+   OR nome ILIKE 'o%'
+   OR nome ILIKE 'u%';
+
+50)
+SELECT d.disciplinaid, d.nome
+FROM disciplina d
+JOIN professorturma pt
+    ON d.disciplinaid = pt.disciplinaid
+WHERE pt.anosemestre IN (20021, 20022)
+GROUP BY d.disciplinaid, d.nome
+HAVING COUNT(DISTINCT pt.anosemestre) = 2;
+
+51)
+SELECT
+    p.produtoid,
+    p.nome AS produto,
+    v.vendaid
+FROM produto p
+LEFT JOIN itemvenda iv
+    ON p.produtoid = iv.produtoid
+LEFT JOIN venda v
+    ON iv.vendaid = v.vendaid
+ORDER BY p.nome;
+
+SELECT COUNT(*) AS total_produtos
+FROM produto;
+
+52)
+SELECT
+    f.fornecedorid,
+    f.nomefantasia,
+    p.pedidoid
+FROM fornecedor f
+LEFT JOIN pedido p
+    ON f.fornecedorid = p.fornecedorid
+ORDER BY f.nomefantasia;
+
+53)
+SELECT
+    c.nome AS classe,
+    p.nome AS produto
+FROM classe c
+LEFT JOIN produto p
+    ON c.classeid = p.classeid
+ORDER BY c.nome, p.nome;
+
+54)
+SELECT
+    e.estadoid,
+    e.nome AS estado,
+    c.nome AS cidade
+FROM estado e
+LEFT JOIN cidade c
+    ON e.estadoid = c.estadoid
+ORDER BY e.nome;
+
+55)
+SELECT
+    p.produtoid,
+    p.nome AS produto,
+    pl.loteid
+FROM produto p
+LEFT JOIN produtolote pl
+    ON p.produtoid = pl.produtoid
+ORDER BY p.nome;
+
+56)
+SELECT
+    cid.nome AS cidade,
+    e.nome AS estado,
+    c.cepid AS cep,
+    v.vendedorid,
+    v.nome AS vendedor
+FROM cidade cid
+LEFT JOIN estado e
+    ON cid.estadoid = e.estadoid
+LEFT JOIN cep c
+    ON cid.cidadeid = c.cidadeid
+LEFT JOIN vendedor v
+    ON c.cepid = v.cepid
+ORDER BY cid.nome;
+
+57)
+SELECT
+    d.nome AS departamento,
+    COUNT(v.vendedorid) AS quantidade_vendedores
+FROM departamento d
+LEFT JOIN vendedor v
+    ON d.departamentoid = v.departamentoid
+GROUP BY d.departamentoid, d.nome
+ORDER BY d.nome;
+
+58)
+SELECT
+    f.fornecedorid,
+    f.nomefantasia AS fornecedor,
+    cid.nome AS cidade,
+    COUNT(p.pedidoid) AS quantidade_pedidos_aprovados
+FROM fornecedor f
+LEFT JOIN cep c
+    ON f.cepid = c.cepid
+LEFT JOIN cidade cid
+    ON c.cidadeid = cid.cidadeid
+LEFT JOIN pedido p
+    ON f.fornecedorid = p.fornecedorid
+    AND p.status = 'Aprovado'
+GROUP BY
+    f.fornecedorid,
+    f.nomefantasia,
+    cid.nome
+ORDER BY f.nomefantasia;
+
+59)
+SELECT
+    cj.clienteid,
+    cj.nomefantasia AS cliente,
+    AVG(iv.quantidade) AS media_quantidade_comprada
+FROM clientejuridico cj
+JOIN venda v
+    ON cj.clienteid = v.clienteid
+JOIN itemvenda iv
+    ON v.vendaid = iv.vendaid
+JOIN produto p
+    ON iv.produtoid = p.produtoid
+WHERE p.nome = 'Acucar Refinado Porto Velho'
+GROUP BY
+    cj.clienteid,
+    cj.nomefantasia
+ORDER BY cj.nomefantasia;
+
+60)
+SELECT
+    cid.nome AS cidade,
+    COUNT(cl.clienteid) AS quantidade_clientes
+FROM cidade cid
+JOIN cep c
+    ON cid.cidadeid = c.cidadeid
+JOIN cliente cl
+    ON c.cepid = cl.cepid
+GROUP BY cid.cidadeid, cid.nome
+HAVING COUNT(cl.clienteid) > 1
+ORDER BY cid.nome;
+
+61)
+SELECT
+    p.produtoid,
+    p.nome AS produto,
+    MAX(iv.quantidade) AS quantidade_maxima,
+    MIN(iv.quantidade) AS quantidade_minima,
+    AVG(iv.quantidade) AS quantidade_media
+FROM produto p
+JOIN itemvenda iv
+    ON p.produtoid = iv.produtoid
+GROUP BY p.produtoid, p.nome
+HAVING AVG(iv.quantidade) > 100
+ORDER BY p.nome;
+
+62)
+SELECT
+    e.estadoid,
+    e.nome AS estado,
+    COUNT(c.cidadeid) AS quantidade_cidades
+FROM estado e
+JOIN cidade c
+    ON e.estadoid = c.estadoid
+GROUP BY e.estadoid, e.nome
+HAVING COUNT(c.cidadeid) > 1
+ORDER BY e.nome;
+
+63)
+SELECT
+    v.vendedorid,
+    v.nome AS vendedor,
+    COUNT(ven.vendaid) AS quantidade_vendas
+FROM vendedor v
+LEFT JOIN venda ven
+    ON v.vendedorid = ven.vendedorid
+GROUP BY v.vendedorid, v.nome
+ORDER BY v.nome;
+
+64)
+CREATE VIEW cinco_produtos_mais_vendidos AS
+SELECT
+    p.produtoid,
+    p.nome AS produto,
+    SUM(iv.quantidade) AS quantidade_total_vendida
+FROM produto p
+JOIN itemvenda iv
+    ON p.produtoid = iv.produtoid
+GROUP BY p.produtoid, p.nome
+ORDER BY quantidade_total_vendida DESC
+LIMIT 5;
+
+65)
+CREATE VIEW segundo_melhor_vendedor AS
+SELECT
+    v.vendedorid,
+    v.nome AS vendedor,
+    COUNT(ven.vendaid) AS quantidade_vendas
+FROM vendedor v
+JOIN venda ven
+    ON v.vendedorid = ven.vendedorid
+GROUP BY v.vendedorid, v.nome
+ORDER BY quantidade_vendas DESC
+LIMIT 1 OFFSET 1;
